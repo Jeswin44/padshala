@@ -194,3 +194,184 @@ EnrollmentSchema.index({ student: 1, course: 1 }, { unique: true });
 3. **Environment Security:** Secrets (`MONGODB_URI`, `JWT_SECRET`, `PORT`) managed solely via `.env` and kept strictly out of version control.
 4. **Clean Error Responses:** Express global error handler returns structured JSON (`{ success: false, message: "..." }`) and hides technical call stacks in production.
 5. **Accessibility & Responsive Design:** Semantic HTML tags (`<main>`, `<header>`, `<nav>`, `<section>`), fully readable color contrast ratios, accessible form labels, and mobile-first CSS.
+
+
+---
+
+## 2. Technology Stack
+
+- **Frontend:** React 19, Vite, React Router DOM, CSS3 (Custom Responsive Design System with Mobile Drawer)
+- **Backend:** Node.js, Express 5, RESTful API Architecture
+- **Database:** MongoDB Atlas (Mongoose ODM)
+- **Authentication:** JSON Web Tokens (JWT) & bcryptjs (Salt rounds: 10)
+- **Version Control:** Git & GitHub (5 milestone commits)
+
+---
+
+## 3. Directory Layout
+
+```text
+padshala/
+├── client/                     # Vite + React Frontend
+│   ├── public/
+│   │   └── _redirects          # SPA fallback routing rule for Netlify/Render
+│   ├── src/
+│   │   ├── components/         # Navbar, Footer, Spinner, Alert, EmptyState, ProtectedRoute
+│   │   ├── context/            # AuthContext (global user state & token storage)
+│   │   ├── pages/              # CatalogPage, CourseDetailsPage, LoginPage, RegisterPage,
+│   │   │                       # InstructorDashboard, MyLearningPage, LessonViewerPage
+│   │   ├── services/           # Centralized API client (api.js)
+│   │   ├── App.jsx             # Client routing & layout shell
+│   │   ├── App.css             # Responsive design system & 4 UI states
+│   │   └── main.jsx            # React root mount
+│   ├── .env.example            # VITE_API_URL
+│   ├── vercel.json             # SPA route fallback rewrite rule for Vercel
+│   └── package.json
+├── server/                     # Node.js + Express API
+│   ├── src/
+│   │   ├── config/             # MongoDB connection (db.js)
+│   │   ├── controllers/        # authController, courseController, enrollmentController
+│   │   ├── middleware/         # auth (protect & authorize), errorHandler, asyncHandler
+│   │   ├── models/             # User, Course (embedded lessons), Enrollment
+│   │   ├── routes/             # authRoutes, courseRoutes, enrollmentRoutes
+│   │   └── server.js           # Server bootstrap & CORS configuration
+│   ├── .env.example            # PORT, MONGODB_URI, JWT_SECRET, CLIENT_URL, NODE_ENV
+│   └── package.json
+├── .gitignore                  # Excludes node_modules/, .env*, dist/, build/
+└── README.md                   # Comprehensive project documentation
+```
+
+---
+
+## 4. Local Installation & Setup
+
+### Prerequisites
+- Node.js (v18+ or v24+)
+- npm (v9+)
+- A free MongoDB Atlas cluster account
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/Jeswin44/padshala.git
+cd padshala
+```
+
+### Step 2: Configure Server Environment
+1. Navigate to the `server/` directory:
+   ```bash
+   cd server
+   ```
+2. Create your `.env` file from `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Update `.env` with your actual MongoDB Atlas connection string and secrets:
+   ```env
+   PORT=5000
+   MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/padshala?retryWrites=true&w=majority
+   JWT_SECRET=your_jwt_secret_key_here
+   CLIENT_URL=http://localhost:5173
+   NODE_ENV=development
+   ```
+4. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Step 3: Configure Client Environment
+1. Navigate to the `client/` directory:
+   ```bash
+   cd ../client
+   ```
+2. Create your `.env` file from `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Ensure `VITE_API_URL` points to your backend:
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   ```
+4. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Step 4: Run the Application
+Open two terminal windows:
+
+- **Terminal 1 (Backend):**
+  ```bash
+  cd server
+  npm run dev
+  ```
+  *(Server runs on `http://localhost:5000` with MongoDB connection verified)*
+
+- **Terminal 2 (Frontend):**
+  ```bash
+  cd client
+  npm run dev
+  ```
+  *(Frontend runs on `http://localhost:5173`)*
+
+---
+
+## 5. Deployment Guide (Milestone 8)
+
+### Database: MongoDB Atlas
+- Cluster: M0 Free Sandbox
+- Network Access: Allow access from `0.0.0.0/0` (Anywhere) so cloud servers can connect.
+
+### Backend Hosting (e.g. Render / Railway)
+1. Create a new **Web Service** connected to your GitHub repo `Jeswin44/padshala`.
+2. **Root Directory:** `server`
+3. **Build Command:** `npm install`
+4. **Start Command:** `node src/server.js`
+5. **Environment Variables:**
+   - `PORT`: `5000`
+   - `MONGODB_URI`: `<Your MongoDB Atlas connection string>`
+   - `JWT_SECRET`: `<Your secret key>`
+   - `CLIENT_URL`: `https://your-frontend-app.vercel.app`
+   - `NODE_ENV`: `production`
+
+### Frontend Hosting (e.g. Vercel / Netlify)
+1. Import repository `Jeswin44/padshala` on **Vercel**.
+2. **Root Directory:** `client`
+3. **Framework Preset:** `Vite`
+4. **Environment Variables:**
+   - `VITE_API_URL`: `https://your-backend-api.onrender.com/api`
+5. Click **Deploy**. SPA rewrites are automatically handled by `vercel.json` and `public/_redirects`.
+
+---
+
+## 6. Self-Review Questions (Section 14 Verification)
+
+1. **What problem does Padshala solve and who is it for?**  
+   Padshala provides a focused, accessible learning portal where educators can easily publish modular courses and students can browse, enroll, and track lesson progress without unnecessary enterprise LMS complexity.
+
+2. **Does the MVP work from start to finish without manual workarounds?**  
+   Yes. Registration, login, role separation, course creation, catalog search, course enrollment, and lesson completion have been tested end-to-end.
+
+3. **Can you trace a request from React to the database and back?**  
+   Example (Course Enrollment): The student clicks "Enroll Now" $\rightarrow$ React calls `enrollmentAPI.enroll(courseId)` with JWT Bearer header $\rightarrow$ Express passes request through `protect` and `authorize('student')` middleware $\rightarrow$ `enrollmentController.js` validates existence and verifies no duplicate $\rightarrow$ Mongoose saves document in `enrollments` collection $\rightarrow$ Returns `201 Created` $\rightarrow$ React updates state and reveals the "Go to Lessons →" button.
+
+4. **What happens on invalid input or server errors?**  
+   Client-side inline validation alerts the user before submission. Server-side Mongoose validation and duplicate key errors are caught by centralized `errorHandler.js` returning structured JSON (`400`, `404`, `409`) without leaking server stack traces.
+
+5. **How are secrets protected?**  
+   No secrets exist in code or Git history. All sensitive keys are managed exclusively via `.env` files that are strictly excluded by `.gitignore`. `.env.example` templates document variable names safely.
+
+---
+
+## 7. Final Submission Checklist (Section 13)
+
+- [x] GitHub repository is public and accessible: [https://github.com/Jeswin44/padshala](https://github.com/Jeswin44/padshala)
+- [x] Clear commit history showing steady progress with milestone-tagged commit messages.
+- [x] `.env` files strictly excluded from Git; `.env.example` templates committed.
+- [x] No secrets, personal tokens, or passwords leaked in commit history.
+- [x] Strict separation of concerns (Routes, Controllers, Models, Middleware, Services).
+- [x] Password hashing with `bcryptjs` and session tokens with `jsonwebtoken`.
+- [x] Centralized error-handling middleware returning clean JSON.
+- [x] Server-side ownership verification preventing unauthorized updates or deletions.
+- [x] All 4 UI states implemented (Loading, Success, Empty, Error with retry).
+- [x] Fully responsive, mobile-first design with accessible HTML semantics.
+- [x] SPA fallback configuration included (`vercel.json` & `public/_redirects`).

@@ -13,9 +13,21 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend requests (Section 7.4)
+// Enable CORS for frontend requests (Section 7.4 & 11)
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman or curl) or matching allowed list
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 
