@@ -42,13 +42,12 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Pre-save hook: Encrypt password with bcrypt before saving (Guidelines Section 6.6 & 10)
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function () {
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Instance method to check password validity
